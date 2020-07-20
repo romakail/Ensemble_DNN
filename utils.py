@@ -3,9 +3,6 @@ import os
 import torch
 import torch.nn.functional as F
 
-import curves
-
-
 def l2_regularizer(weight_decay):
     def regularizer(model):
         l2 = 0.0
@@ -278,16 +275,12 @@ def logits(test_loader, model, **kwargs):
         targets.append(target)
     return torch.cat(preds, dim=0), torch.cat(targets, dim=0)
 
-
 def isbatchnorm(module):
-    return issubclass(module.__class__, torch.nn.modules.batchnorm._BatchNorm) or \
-           issubclass(module.__class__, curves._BatchNorm)
-
+    return issubclass(module.__class__, torch.nn.modules.batchnorm._BatchNorm)
 
 def _check_bn(module, flag):
     if isbatchnorm(module):
         flag[0] = True
-
 
 def check_bn(model):
     flag = [False]

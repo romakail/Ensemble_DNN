@@ -6,8 +6,6 @@
 import math
 import torch.nn as nn
 
-import curves
-
 __all__ = ['VGG16', 'VGG16BN', 'VGG19', 'VGG19BN']
 
 config = {
@@ -136,7 +134,6 @@ class VGGCurve(nn.Module):
 
 class VGG16:
     base = VGGBase
-    curve = VGGCurve
     kwargs = {
         'depth': 16,
         'batch_norm': False
@@ -145,7 +142,6 @@ class VGG16:
 
 class VGG16BN:
     base = VGGBase
-    curve = VGGCurve
     kwargs = {
         'depth': 16,
         'batch_norm': True
@@ -154,7 +150,6 @@ class VGG16BN:
 
 class VGG19:
     base = VGGBase
-    curve = VGGCurve
     kwargs = {
         'depth': 19,
         'batch_norm': False
@@ -163,7 +158,6 @@ class VGG19:
 
 class VGG19BN:
     base = VGGBase
-    curve = VGGCurve
     kwargs = {
         'depth': 19,
         'batch_norm': True

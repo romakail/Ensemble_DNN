@@ -64,17 +64,6 @@ class VGG(nn.Module):
                 nn.init.normal_(m.weight, 0, 0.01)
                 nn.init.constant_(m.bias, 0)
 
-
-# def _vgg(arch, cfg, batch_norm, pretrained, progress, **kwargs):
-#     if pretrained:
-#         kwargs['init_weights'] = False
-#     model = VGG(make_layers(cfgs[cfg], batch_norm=batch_norm), **kwargs)
-#     if pretrained:
-#         state_dict = load_state_dict_from_url(model_urls[arch],
-#                                               progress=progress)
-#         model.load_state_dict(state_dict)
-#     return model
-
 class vgg2:
     base = VGG
     kwargs = {

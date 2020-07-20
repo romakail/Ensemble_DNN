@@ -7,7 +7,6 @@ import time
 import torch
 import torch.nn.functional as F
 
-import curves
 import data
 import models
 import utils
@@ -70,7 +69,7 @@ parser.add_argument('--seed', type=int, default=0, metavar='S', help='random see
 
 args = parser.parse_args()
 
-os.makedirs(args.dir, exist_ok=True)
+os.makedirs(args.dir, exist_ok=False)
 with open(os.path.join(args.dir, 'command.sh'), 'w') as f:
     f.write(' '.join(sys.argv))
     f.write('\n')
