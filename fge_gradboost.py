@@ -198,14 +198,17 @@ for epoch in range(args.epochs):
 
     if (epoch + 1) % args.cycle == 0:
         if args.boost_lr == 'auto':
-            boost_lr = regularization.adjust_boost_lr(loaders['train'], model)
+            os.makedirs(args.dir + '/boost_lr', exist_ok=True)
+            boost_lr = regularization.adjust_boost_lr(
+                loaders['train'],
+                model,
+                save_info=args.dir + '/boost_lr/' + str(epoch) + '.pt')
         print ('Boost_lr : ', boost_lr)
         ensemble_size += 1
         logits, targets = utils.logits(loaders['test'], model)
         logits_sum += boost_lr * logits
         ens_acc = 100.0 * torch.eq(logits_sum.argmax(dim=1), targets).float().mean().item()
         
-        print ('Shapes :', logits.shape, targets.shape)
         regularization.logits_info(logits, logits_sum=logits_sum)
         
         utils.save_checkpoint(
@@ -244,11 +247,12 @@ for epoch in range(args.epochs):
                 batch_size = args.batch_size))
         
         if args.independent:
+            print ("I am making a new model")
             model = architecture.base(num_classes=num_classes, **architecture.kwargs)
             model.cuda()
         
     values = [epoch, lr_schedule(1.0), train_res['loss'], train_res['accuracy'], test_res['nll'], test_res['loss'], test_res['accuracy'], ens_acc, time_ep]
-    table = tabulate.tabulate([values], columns, tablefmt='simple', floatfmt='9.4f')
+    table = tabulate.tabulate([values], columns, tablefmt='simple', floatfmt='9.6f')
     if epoch % 40 == 0:
         table = table.split('\n')
         table = '\n'.join([table[1]] + table)

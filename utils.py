@@ -138,10 +138,14 @@ def train_gb (train_loader, model, optimizer, criterion, regularizer=None, lr_sc
 #         print ("Labels :", labels.shape)
 #         print ("Logits :", logits.shape)
         if isinstance(labels, dict):
-            labels  = labels['labels']
             weights = labels['weights']
+            labels  = labels['labels']
         else:
-            weights = torch.ones(labels.shape, dtype=torch.float, device=torch.device('cuda'))
+            weights = torch.ones(
+                labels.shape,
+                dtype=torch.float,
+                device=torch.device('cuda'),
+                requires_grad=False)
         
         if lr_schedule is not None:
             lr = lr_schedule(iter / num_iters)
@@ -166,9 +170,8 @@ def train_gb (train_loader, model, optimizer, criterion, regularizer=None, lr_sc
 
         if regularizer is not None:
             loss += boost_lr * regularizer(model)
-
+        
         optimizer.zero_grad()
-
         loss.backward()
         optimizer.step()
 

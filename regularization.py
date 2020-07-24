@@ -176,7 +176,8 @@ def adjust_boost_lr(
     device=torch.device('cuda'),
     lr_initialization = [0.01, 0.1, 1., 10., 100., 1000., 10000., 100000., 1000000.],
     n_steps = 1000,
-    step_size = 1000000.):
+    step_size = 1000000.,
+    save_info=None):
     
     model.eval().to(device)#.detach()
     with torch.no_grad():
@@ -205,16 +206,31 @@ def adjust_boost_lr(
     optim = torch.optim.SGD([learning_rate], lr=1., momentum=0.5)
     learning_rates = np.arange(1., 0., -1/n_steps, dtype=float) * float(learning_rate) * step_size
     
+    if save_info is not None:
+        info = {}
+        info['iter'] = []
+        info['loss'] = []
+        info['lr']   = []
+        info['grad'] = []
+    
     for iter, loc_lr in enumerate(learning_rates):
         utils.adjust_learning_rate(optim, loc_lr)
         loss = criterion(logits + learning_rate * predicts, targets)
             
         loss.backward()
         optim.step()
+        if save_info is not None:
+            info['iter'].append(iter)
+            info['loss'].append(loss.item())
+            info['lr']  .append(learning_rate.item())
+            info['grad'].append(learning_rate.grad.item())
         if iter%(100) == 99:
             print ('[', iter, '] lr :', learning_rate, 'grad :', learning_rate.grad)
         optim.zero_grad()
     
+    if save_info is not None:
+        print ("I am saving to", save_info)
+        torch.save(info, save_info)
     return float(learning_rate.detach())
         
         
