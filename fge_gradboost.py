@@ -250,6 +250,12 @@ for epoch in range(args.epochs):
             print ("I am making a new model")
             model = architecture.base(num_classes=num_classes, **architecture.kwargs)
             model.cuda()
+            optimizer = torch.optim.SGD(
+                model.parameters(),
+                lr=args.lr_1,
+                momentum=args.momentum,
+                weight_decay=args.wd
+            )
         
     values = [epoch, lr_schedule(1.0), train_res['loss'], train_res['accuracy'], test_res['nll'], test_res['loss'], test_res['accuracy'], ens_acc, time_ep]
     table = tabulate.tabulate([values], columns, tablefmt='simple', floatfmt='9.6f')
