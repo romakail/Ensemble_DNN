@@ -3,7 +3,7 @@ import math as m
 import numpy as np
 import torch
 import torch.nn.functional as F
-from tqdm import tqdm_notebook as tqdm
+from tqdm import tqdm as tqdm
 from scipy.stats import wasserstein_distance
 
 epsilon = 1e-45

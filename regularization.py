@@ -176,7 +176,7 @@ def adjust_boost_lr(
     device=torch.device('cuda'),
     lr_initialization = [0.01, 0.1, 1., 10., 100., 1000., 10000., 100000., 1000000.],
     n_steps = 1000,
-    step_size = 1000000.,
+    step_size = 100000.,
     save_info=None):
     
     model.eval().to(device)#.detach()
