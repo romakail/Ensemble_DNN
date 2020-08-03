@@ -130,6 +130,7 @@ optimizer = torch.optim.SGD(
 )
 optimizer.load_state_dict(checkpoint['optimizer_state'])
 
+criterion = torch.nn.MSELoss(reduction='none')
 # test_res = utils.test(loaders['test'], model, criterion)
 # print ('Initial quality: ', test_res['accuracy'])
 
