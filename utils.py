@@ -127,7 +127,7 @@ def train_weighted(train_loader, model, optimizer, criterion, regularizer=None, 
         'accuracy': correct * 100.0 / len(train_loader.dataset),
     }
 
-def train_gb (train_loader, model, optimizer, criterion, regularizer=None, lr_schedule=None, gb_version='classic', boost_lr=1.):
+def train_gb (train_loader, model, optimizer, criterion, regularizer=None, lr_schedule=None, boost_lr=1.):
     loss_sum = 0.0
     correct = 0.0
 
@@ -137,15 +137,11 @@ def train_gb (train_loader, model, optimizer, criterion, regularizer=None, lr_sc
 #         print ("Input  :", input.shape)
 #         print ("Labels :", labels.shape)
 #         print ("Logits :", logits.shape)
-        if isinstance(labels, dict):
-            weights = labels['weights']
-            labels  = labels['labels']
-        else:
-            weights = torch.ones(
-                labels.shape,
-                dtype=torch.float,
-                device=torch.device('cuda'),
-                requires_grad=False)
+        weights = torch.ones(
+            labels.shape,
+            dtype=torch.float,
+            device=torch.device('cuda'),
+            requires_grad=False)
         
         if lr_schedule is not None:
             lr = lr_schedule(iter / num_iters)
@@ -159,12 +155,9 @@ def train_gb (train_loader, model, optimizer, criterion, regularizer=None, lr_sc
 #         print("Labels :", type(labels), labels.shape, labels.dtype)
 #         print("Output :", type(output), output.shape, output.dtype)
 #         raise AssertionError('STOP')
-        
-        if   gb_version == 'simple':
-            loss = criterion(logits + boost_lr * output, labels)
-        elif gb_version == 'classic':
-            antigrad = one_hot(labels, logits.shape[1]) - F.softmax(logits, dim=1)
-            loss = criterion(output, antigrad).mean(dim=1)
+
+        antigrad = one_hot(labels, logits.shape[1]) - F.softmax(logits, dim=1)
+        loss = criterion(output, antigrad).mean(dim=1)
 
         loss = torch.mean(loss * weights)
 
@@ -194,10 +187,7 @@ def test(test_loader, model, criterion, regularizer=None, **kwargs):
 
     for input, target in test_loader:
         input = input.cuda(device=None, non_blocking=False)
-        if isinstance (target, dict):
-            target = target['label'].cuda(device=None, non_blocking=False)
-        else:
-            target = target.cuda(device=None, non_blocking=False)
+        target = target.cuda(device=None, non_blocking=False)
 
         output = model(input, **kwargs)
         nll = criterion(output, target).mean()
@@ -217,7 +207,7 @@ def test(test_loader, model, criterion, regularizer=None, **kwargs):
     }
 
 
-def test_gb(test_loader, model, criterion, regularizer=None, gb_version='classic', boost_lr=1., **kwargs):
+def test_gb(test_loader, model, criterion, regularizer=None, boost_lr=1., **kwargs):
     loss_sum = 0.0
     nll_sum = 0.0
     correct = 0.0
@@ -231,18 +221,12 @@ def test_gb(test_loader, model, criterion, regularizer=None, gb_version='classic
         logits = logits.cuda(device=None, non_blocking=False)
         
         output = model(input, **kwargs)
-        if   gb_version == 'simple':
-            nll = criterion(logits + boost_lr * output, labels).mean()
-            loss = nll.clone()
-        elif gb_version == 'classic':
-            antigrad = one_hot(target, logits.shape[1]) - F.softmax(logits, dim=1)
-            nll = criterion(output, antigrad).mean(dim=1).mean()
-            loss = torch.nn.CrossEntropyLoss()(logits + boost_lr * output, target)
+        antigrad = one_hot(target, logits.shape[1]) - F.softmax(logits, dim=1)
+        nll = criterion(output, antigrad).mean(dim=1).mean()
+        loss = torch.nn.CrossEntropyLoss()(logits + boost_lr * output, target)
 
         nll_sum  += nll.item() * input.size(0)
         loss_sum += loss.item() * input.size(0)
-#         pred = output.data.argmax(1, keepdim=True)
-#         correct += pred.eq(target.data.view_as(pred)).sum().item()
         pred = (logits + boost_lr * output).data.argmax(1, keepdim=True)
         correct += pred.eq(target.data.view_as(pred)).sum().item()
 

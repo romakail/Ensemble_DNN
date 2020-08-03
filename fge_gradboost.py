@@ -15,8 +15,8 @@ import regularization
 
 parser = argparse.ArgumentParser(description='FGE training')
 
-parser.add_argument('--dir', type=str, default='/tmp/fge/', metavar='DIR',
-                    help='training directory (default: /tmp/fge)')
+parser.add_argument('--dir', type=str, default='/tmp/fge_gb/', metavar='DIR',
+                    help='training directory (default: /tmp/fge_gb)')
 
 parser.add_argument('--dataset', type=str, default='CIFAR10', metavar='DATASET',
                     help='dataset name (default: CIFAR10)')
@@ -33,7 +33,6 @@ parser.add_argument('--num-workers', type=int, default=4, metavar='N',
 
 parser.add_argument('--model', type=str, default=None, metavar='MODEL',
                     help='model name (default: None)')
-
 parser.add_argument('--ckpt', type=str, default=None, metavar='CKPT',
                     help='checkpoint to eval (default: None)')
 
@@ -52,22 +51,10 @@ parser.add_argument('--wd', type=float, default=1e-4, metavar='WD',
 parser.add_argument('--device', type=int, default=0, metavar='N',
                     help='number of device to train on (default: 0)')
 
-parser.add_argument('--regularizer', type=str, default=None, metavar='REGULARIZER',
-                    help='regularizer type (None/MSE2/MAE2) (default: None)')
-parser.add_argument('--reg_wd', type=float, default=0, metavar='WD',
-                    help='coefficient in regularizer between 2 networks (default: 0)')
-parser.add_argument('--weighted_samples', type=str, default=None, metavar='WEIGHT',
-                    help='method of weighting samples before crossentropy (Lin/Exp/AdaLast/AdaBoost) (default: None)')
-parser.add_argument('--weight_coef', type=float, default=0, metavar='WD',
-                    help='intensity of increasing of errors weights (default: 0)')
-# parser.add_argument('--grad_boost', action='store_true',
-#                     help='Enables gradient boosting algorithm over FGE (default=False)')
-parser.add_argument('--version', type=str, default='classic', metavar='GB_VERSION',
-                    help='Version of gradient boosting implementation (classic/simple).')
 parser.add_argument('--boost_lr', type=str, default='auto', metavar='BOOST_LR',
                     help='boosting learning rate (auto/some float value)')
 parser.add_argument('--independent', type=bool, default=False, metavar='INDEP',
-                    help='checks, whether models are trained independently')
+                    help='checks, whether models are initialized independently')
 parser.add_argument('--scheduler', type=str, default='cyclic', metavar='SCHEDULER',
                     help='learning rate scheduler of every cycle (cyclic/linear/slide)')
 
@@ -104,13 +91,6 @@ if   args.dataset == "CIFAR10":
 elif args.dataset == "CIFAR100":
     num_classes = 100
 model = architecture.base(num_classes=num_classes, **architecture.kwargs)
-
-if   args.version == 'classic':
-    criterion = torch.nn.MSELoss(reduction='none')
-elif args.version == 'simple':
-    criterion = torch.nn.CrossEntropyLoss(reduction='none')
-else:
-    raise AssertionError('I don`t know this implementation of gradient boosting')
 
 if   args.scheduler == 'cyclic':
     scheduler = utils.cyclic_learning_rate
@@ -158,12 +138,6 @@ predictions_sum = np.zeros((len(loaders['test'].dataset), num_classes))
 
 columns = ['ep', 'lr', 'tr_loss', 'tr_acc', 'te_nll', 'te_loss', 'te_acc', 'ens_acc', 'time']
 
-if args.regularizer is None:
-    regularizer = None
-elif args.regularizer == 'MSE2':
-    regularizer = regularization.TwoModelsMSE(model, args.reg_wd).reg
-
-
 utils.save_checkpoint(
     args.dir,
     start_epoch,
@@ -185,8 +159,6 @@ for epoch in range(args.epochs):
         optimizer,
         criterion,
         lr_schedule=lr_schedule,
-        regularizer=regularizer,
-        gb_version=args.version,
         boost_lr=boost_lr)
     test_res = utils.test_gb(
         loaders['test'],
@@ -220,13 +192,6 @@ for epoch in range(args.epochs):
             boost_weight=boost_lr
         )
 
-#     if args.regularizer is not None and (epoch + 1) % (args.cycle) == 0:
-#         regularizer = regularization.TwoModelsMSE(model, args.reg_wd).reg
-#     if args.regularizer is not None and (epoch + 1) % (args.cycle // 2) == args.cycle // 2:
-#         regularizer = None
-
-#     if args.weighted_samples is not None and (epoch + 1) % args.cycle == 0:
-#     if (epoch + 1) % args.cycle == 0:
         loaders['train'].dataset.update_logits(
             boost_lr,
             logits_generator=regularization.dataset_logits_generator(
