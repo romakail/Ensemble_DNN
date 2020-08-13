@@ -135,6 +135,9 @@ def dataset_logits_generator(model, transform, batch_size=64):
             input_batch = []
             logits = []
             for idx, input in enumerate(input_tensor):
+#                 print ("Input_type :", type(input))
+                if isinstance(input, torch.Tensor):
+                    input = np.array(input.cpu())
                 input = Image.fromarray(input)
                 input = transform(input)
                 input_batch.append(input.unsqueeze(0))

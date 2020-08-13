@@ -1,5 +1,4 @@
 import os
-import numpy as np
 import torch
 import torchvision
 import torchvision.transforms as transforms
@@ -7,23 +6,7 @@ from torch.utils.data import Dataset
 from PIL import Image
 
 class Transforms:
-    
-    class MNIST:
-        
-        class VGG:
-            
-            train = transforms.Compose([
-                transforms.Resize(size=[32, 32]),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.5], std=[0.5]),
-            ])
-            
-            test = transforms.Compose([
-                transforms.Resize(size=[32, 32]),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.5], std=[0.5]),
-            ])
-    
+
     class CIFAR10:
 
         class VGG:
@@ -74,8 +57,6 @@ class GradBoostDataset (Dataset):
 #         print ("Logits :", type(self.logits[idx]))
         
         img, target, logit = self.inputs[idx], self.targets[idx], self.logits[idx]
-        if isinstance(img, torch.Tensor):
-            img = np.array(img.cpu())
         img = Image.fromarray(img)
         
         if self.transform is not None:
@@ -134,7 +115,7 @@ def loaders(dataset, path, batch_size, num_workers, transform_name, use_test=Fal
                    num_workers=num_workers,
                    pin_memory=True
                ),
-           }, n_classes.item()
+           }, n_classes
 
 def loaders_gb(dataset, path, batch_size, num_workers, transform_name, use_test=False, shuffle_train=True, logits_generator=None):
     ds = getattr(torchvision.datasets, dataset)
@@ -192,4 +173,4 @@ def loaders_gb(dataset, path, batch_size, num_workers, transform_name, use_test=
                    num_workers=num_workers,
                    pin_memory=True
                ),
-           }, n_classes.item()
+           }, n_classes

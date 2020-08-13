@@ -103,6 +103,8 @@ if   args.dataset == "CIFAR10":
     num_classes = 10
 elif args.dataset == "CIFAR100":
     num_classes = 100
+elif args.dataset == "MNIST":
+    num_classes = 10
 model = architecture.base(num_classes=num_classes, **architecture.kwargs)
 
 if   args.version == 'classic':

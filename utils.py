@@ -269,6 +269,7 @@ def predictions(test_loader, model, **kwargs):
 def logits(test_loader, model, **kwargs):
     preds = []
     targets = []
+    print ('TestLoader :', type(test_loader))
     for data in test_loader:
         input = data[0]
         target = data[1]
