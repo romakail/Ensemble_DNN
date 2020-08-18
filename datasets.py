@@ -20,3 +20,4 @@ class CIFAR2(torchvision.datasets.CIFAR10):
         
 CIFAR10  = torchvision.datasets.CIFAR10
 CIFAR100 = torchvision.datasets.CIFAR100
+MNIST    = torchvision.datasets.MNIST

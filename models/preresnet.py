@@ -91,7 +91,7 @@ class Bottleneck(nn.Module):
 
 class PreResNetBase(nn.Module):
 
-    def __init__(self, num_classes, depth=110):
+    def __init__(self, num_classes, depth=110, in_features=3):
         super(PreResNetBase, self).__init__()
         if depth >= 44:
             assert (depth - 2) % 9 == 0, 'depth should be 9n+2'
@@ -103,7 +103,7 @@ class PreResNetBase(nn.Module):
             block = BasicBlock
 
         self.inplanes = 16
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, padding=1,
+        self.conv1 = nn.Conv2d(in_features, 16, kernel_size=3, padding=1,
                                bias=False)
         self.layer1 = self._make_layer(block, 16, n)
         self.layer2 = self._make_layer(block, 32, n, stride=2)

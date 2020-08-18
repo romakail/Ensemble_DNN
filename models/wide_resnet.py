@@ -36,7 +36,7 @@ class WideBasic(nn.Module):
 
 
 class WideResNetBase(nn.Module):
-    def __init__(self, num_classes, depth=28, widen_factor=10, dropout_rate=0.):
+    def __init__(self, num_classes, depth=28, widen_factor=10, dropout_rate=0., in_features=3):
         super(WideResNetBase, self).__init__()
         self.in_planes = 16
 
@@ -46,7 +46,7 @@ class WideResNetBase(nn.Module):
 
         nstages = [16, 16 * k, 32 * k, 64 * k]
 
-        self.conv1 = conv3x3(3, nstages[0])
+        self.conv1 = conv3x3(in_features, nstages[0])
         self.layer1 = self._wide_layer(WideBasic, nstages[1], n, dropout_rate, stride=1)
         self.layer2 = self._wide_layer(WideBasic, nstages[2], n, dropout_rate, stride=2)
         self.layer3 = self._wide_layer(WideBasic, nstages[3], n, dropout_rate, stride=2)

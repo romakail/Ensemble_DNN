@@ -104,8 +104,17 @@ print ('Train_len = ', train_len, 'test_len = ', test_len)
 # print (dir(models))
 architecture = getattr(models, args.model)
 
-# print ('Num classes :', num_classes, type(num_classes))
-model = architecture.base(num_classes=num_classes, **architecture.kwargs)
+if   args.dataset in ['CIFAR2', 'CIFAR10', 'CIFAR100']:
+    in_features = 3
+elif args.dataset in ['MNIST']:
+    in_features = 1
+else:
+    raise AssertionError("I don't know this dataset")
+
+model = architecture.base(
+    num_classes=num_classes,
+    in_features=in_features,
+    **architecture.kwargs)
 model.cuda()
 # summary(model, (3, 32, 32))
 

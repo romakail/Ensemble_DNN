@@ -8,10 +8,10 @@ __all__ = [
 
 class ConvFCBase(nn.Module):
 
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, in_features=3):
         super(ConvFCBase, self).__init__()
         self.conv_part = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=5, padding=2),
+            nn.Conv2d(in_features, 32, kernel_size=5, padding=2),
             nn.ReLU(True),
             nn.MaxPool2d(kernel_size=3, stride=2),
             nn.Conv2d(32, 64, kernel_size=5, padding=2),

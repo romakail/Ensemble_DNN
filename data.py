@@ -78,7 +78,8 @@ class GradBoostDataset (Dataset):
         
         img, target, logit = self.inputs[idx], self.targets[idx], self.logits[idx]
         if isinstance(img, torch.Tensor):
-            img = np.array(img.cpu())
+            img = img.cpu().numpy()
+            
         img = Image.fromarray(img)
         
         if self.transform is not None:
@@ -100,7 +101,7 @@ def loaders(dataset, path, batch_size, num_workers, transform_name, use_test=Fal
     path = os.path.join(path, dataset.lower())
     transform = getattr(getattr(Transforms, dataset), transform_name)
     train_set = ds(path, train=True, download=True, transform=transform.train)
-
+    
     n_classes = max(train_set.targets) + 1
     if weights_generator is not None:
         weights = weights_generator (train_set)
