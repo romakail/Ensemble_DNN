@@ -14,12 +14,12 @@ class Flatten(nn.Module):
 
 class TwoLayersNetBase(nn.Module):
 
-    def __init__(self, num_classes, in_features=3):
+    def __init__(self, num_classes):
         super(TwoLayersNetBase, self).__init__()
         
         self.fc = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(1*32*32, 10),
+            nn.Linear(3*32*32, 10),
             nn.ReLU(True),
             nn.Linear(10, num_classes)
         )

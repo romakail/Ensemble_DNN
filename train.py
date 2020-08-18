@@ -105,7 +105,7 @@ print ('Train_len = ', train_len, 'test_len = ', test_len)
 architecture = getattr(models, args.model)
 
 # print ('Num classes :', num_classes, type(num_classes))
-model = architecture.base(num_classes=num_classes, in_features=1, **architecture.kwargs)
+model = architecture.base(num_classes=num_classes, **architecture.kwargs)
 model.cuda()
 # summary(model, (3, 32, 32))
 

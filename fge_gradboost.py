@@ -99,7 +99,9 @@ if (args.boost_lr == 'auto'):
 else:
     boost_lr = float(args.boost_lr)
 
-if   args.dataset == "CIFAR10":
+if   args.dataset == 'CIFAR2':
+    num_classes = 2
+elif args.dataset == "CIFAR10":
     num_classes = 10
 elif args.dataset == "CIFAR100":
     num_classes = 100

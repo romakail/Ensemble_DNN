@@ -6,6 +6,8 @@ import torchvision.transforms as transforms
 from torch.utils.data import Dataset
 from PIL import Image
 
+import datasets
+
 class Transforms:
     
     class MNIST:
@@ -54,6 +56,7 @@ class Transforms:
                 transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010]),
             ])
 
+    CIFAR2   = CIFAR10
     CIFAR100 = CIFAR10
 
 class GradBoostDataset (Dataset):
@@ -92,7 +95,8 @@ class GradBoostDataset (Dataset):
 
 def loaders(dataset, path, batch_size, num_workers, transform_name, use_test=False,
             shuffle_train=True, weights_generator=None):
-    ds = getattr(torchvision.datasets, dataset)
+#     ds = getattr(torchvision.datasets, dataset)
+    ds = getattr(datasets, dataset)
     path = os.path.join(path, dataset.lower())
     transform = getattr(getattr(Transforms, dataset), transform_name)
     train_set = ds(path, train=True, download=True, transform=transform.train)
@@ -134,10 +138,11 @@ def loaders(dataset, path, batch_size, num_workers, transform_name, use_test=Fal
                    num_workers=num_workers,
                    pin_memory=True
                ),
-           }, n_classes.item()
+           }, int(n_classes)
 
 def loaders_gb(dataset, path, batch_size, num_workers, transform_name, use_test=False, shuffle_train=True, logits_generator=None):
-    ds = getattr(torchvision.datasets, dataset)
+#     ds = getattr(torchvision.datasets, dataset)
+    ds = getattr(datasets, dataset)
     path = os.path.join(path, dataset.lower())
     transform = getattr(getattr(Transforms, dataset), transform_name)
     train_set = ds(path, train=True , download=True, transform=transform.train)
