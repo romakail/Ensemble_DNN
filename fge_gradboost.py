@@ -63,7 +63,9 @@ parser.add_argument('--weight_coef', type=float, default=0, metavar='WD',
 # parser.add_argument('--grad_boost', action='store_true',
 #                     help='Enables gradient boosting algorithm over FGE (default=False)')
 parser.add_argument('--version', type=str, default='classic', metavar='GB_VERSION',
-                    help='Version of gradient boosting implementation (classic/simple).')
+                    help='Version of gradient boosting implementation (classic/simple/distillation)')
+parser.add_argument('--temperature', type=float, default=1., metavar='TEMP',
+                    help='Temperature in crossentropy loss. Needed only for distillation')
 parser.add_argument('--boost_lr', type=str, default='auto', metavar='BOOST_LR',
                     help='boosting learning rate (auto/some float value)')
 parser.add_argument('--independent', type=bool, default=False, metavar='INDEP',
@@ -101,18 +103,27 @@ else:
 
 if   args.dataset == 'CIFAR2':
     num_classes = 2
+    in_features = 3
 elif args.dataset == "CIFAR10":
     num_classes = 10
+    in_features = 3
 elif args.dataset == "CIFAR100":
     num_classes = 100
+    in_features = 3
 elif args.dataset == "MNIST":
     num_classes = 10
-model = architecture.base(num_classes=num_classes, **architecture.kwargs)
+    in_features = 1
+model = architecture.base(
+    num_classes=num_classes,
+    in_features=in_features,
+    **architecture.kwargs)
 
 if   args.version == 'classic':
     criterion = torch.nn.MSELoss(reduction='none')
 elif args.version == 'simple':
     criterion = torch.nn.CrossEntropyLoss(reduction='none')
+elif args.version == 'distillation':
+    criterion = utils.CrossEntropyReforged(reduction='none')
 else:
     raise AssertionError('I don`t know this implementation of gradient boosting')
 
@@ -196,6 +207,7 @@ for epoch in range(args.epochs):
         loaders['test'],
         model,
         criterion,
+        gb_version=args.version,
         boost_lr=boost_lr)
     time_ep = time.time() - time_ep
     ens_acc = None
@@ -252,7 +264,10 @@ for epoch in range(args.epochs):
         
         if args.independent:
             print ("I am making a new model")
-            model = architecture.base(num_classes=num_classes, **architecture.kwargs)
+            model = architecture.base(
+                num_classes=num_classes,
+                in_features=in_features,
+                **architecture.kwargs)
             model.cuda()
             optimizer = torch.optim.SGD(
                 model.parameters(),

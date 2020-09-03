@@ -165,6 +165,9 @@ def train_gb (train_loader, model, optimizer, criterion, regularizer=None, lr_sc
         elif gb_version == 'classic':
             antigrad = one_hot(labels, logits.shape[1]) - F.softmax(logits, dim=1)
             loss = criterion(output, antigrad).mean(dim=1)
+        elif gb_version == 'distillation':
+            antigrad = one_hot(labels, logits.shape[1]) - F.softmax(logits, dim=1)
+            loss = criterion(output, antigrad)
 
         loss = torch.mean(loss * weights)
 
@@ -238,6 +241,10 @@ def test_gb(test_loader, model, criterion, regularizer=None, gb_version='classic
             antigrad = one_hot(target, logits.shape[1]) - F.softmax(logits, dim=1)
             nll = criterion(output, antigrad).mean(dim=1).mean()
             loss = torch.nn.CrossEntropyLoss()(logits + boost_lr * output, target)
+        elif gb_version == 'distillation':
+            antigrad = one_hot(target, logits.shape[1]) - F.softmax(logits, dim=1)
+            nll = criterion(output, antigrad).mean()
+            loss = torch.nn.CrossEntropyLoss()(logits + boost_lr * output, target)
 
         nll_sum  += nll.item() * input.size(0)
         loss_sum += loss.item() * input.size(0)
@@ -269,7 +276,6 @@ def predictions(test_loader, model, **kwargs):
 def logits(test_loader, model, **kwargs):
     preds = []
     targets = []
-    print ('TestLoader :', type(test_loader))
     for data in test_loader:
         input = data[0]
         target = data[1]
@@ -331,3 +337,26 @@ def update_bn(loader, model, **kwargs):
 def one_hot(batch ,depth):
     ones = torch.eye(depth, dtype=batch.dtype, device=batch.device)
     return ones.index_select(0,batch)
+
+
+class CrossEntropyReforged():
+    def __init__(self, temperature=1., reduction='mean'):
+        assert(reduction in ['mean', 'sum', 'none'])
+        self.temperature = temperature
+        self.reduction = reduction
+        
+        self.   Softmax = torch.nn.   Softmax(dim=1)
+        self.LogSoftmax = torch.nn.LogSoftmax(dim=1)
+        
+    def __call__(self, input, target):
+        input_logprobas = self.LogSoftmax(input  / self.temperature)
+        target_probas   = self.   Softmax(target / self.temperature)
+        
+        loss = - torch.sum(target_probas * input_logprobas, dim=1)
+        
+        if   self.reduction == 'mean':
+            return loss.mean()
+        elif self.reduction == 'sum':
+            return loss.sum()
+        elif self.reduction == 'none':
+            return loss

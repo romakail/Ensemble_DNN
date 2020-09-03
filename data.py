@@ -198,4 +198,4 @@ def loaders_gb(dataset, path, batch_size, num_workers, transform_name, use_test=
                    num_workers=num_workers,
                    pin_memory=True
                ),
-           }, n_classes.item()
+           }, int(n_classes)
